@@ -2,7 +2,8 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <button @click="sendWorkerMessage">Send message</button>
-    <pre>{{ JSON.stringify(output) }}</pre>
+    <p class="performance">{{ time }}</p>
+    <p>{{ output }}</p>
   </div>
 </template>
 
@@ -16,13 +17,14 @@ export default {
   },
   data: () => ({
     output: '',
+    time: ''
   }),
   created() {
     worker.onmessage = this.messageReceivedCallback;
   },
   methods: {
     sendWorkerMessage() {
-      const object = { object: 'with values '};
+      const object = { method: 'GET'};
 
       const encoder = new TextEncoder();
       const array = encoder.encode(JSON.stringify(object));
@@ -30,7 +32,8 @@ export default {
       worker.postMessage(array, [array.buffer]);
     },
     messageReceivedCallback(response) {
-      this.output = response.data;
+      this.output = response.data.obj[0];
+      this.time = response.data.time;
     },
   }
 }
@@ -51,4 +54,9 @@ li {
 a {
   color: #42b983;
 }
+
+.performance{
+  background: yellow;
+}
+
 </style>
