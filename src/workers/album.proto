@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message Response {
+  required int32 albumId = 0; 
+  required int32 id = 1; 
+  required string title = 2;
+  required string url = 3;
+  required string thumbnailUrl = 4;
+}
+
+message Photos {
+  repeated Response data = 5;
+}
+

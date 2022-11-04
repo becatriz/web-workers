@@ -1,23 +1,20 @@
 const workerContext = self;
 
+const evenNumbers = []
+
 function messageReceived(response) {
-  if (response.data.method === "GET") {
-    const t1 = performance.now();
-    fetch("https://jsonplaceholder.typicode.com/photos")
-      .then((response) => response.json())
-      .then((json) => {
-        const t2 = performance.now();
+  response.data.forEach((item, index) => {
+    item.sum =  item.albumId + response.data[index].albumId;
 
-        json.flat().forEach((item) => {
-          item.newProp = "Uma prop a mais";
-        });
+    if((item.albumId % 2) == 0){
+      evenNumbers.push(item.albumId)
+    }
+  })
 
-        workerContext.postMessage({
-          obj: json,
-          time: "Call to doSomething took " + (t1 - t2) + " milliseconds.",
-        });
-      });
-  }
+  workerContext.postMessage({
+    obj: response.data,
+    even: evenNumbers
+  });
 }
 
 workerContext.onmessage = messageReceived;

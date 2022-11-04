@@ -1,11 +1,11 @@
 <template>
   <header>
     <nav>
-      <span>HOME</span>
+      <span  @click="handlePage('/')">HOME</span>
       <ul>
-        <li @click="handlePage">Web Worker</li>
-        <li>Transferables</li>
-        <li>Protobuf</li>
+        <li @click="handlePage('/web-worker')">Web Worker</li>
+        <li @click="handlePage('/text-encoder')">Transferables</li>
+        <li @click="handlePage('/protobuf')">Protobuf</li>
       </ul>
     </nav>
   </header>
@@ -15,8 +15,8 @@
 export default {
   name: "Header",
   methods: {
-    handlePage() {
-      this.$router.push("/web-worker");
+    handlePage(params) {
+      this.$router.push(params);
     },
   },
 };

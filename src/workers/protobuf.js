@@ -1,30 +1,32 @@
 /* eslint-disable no-debugger */
 
 import Pbf from "pbf";
-import userProto from "./user.proto";
+import album from "./album.proto";
 
 const workerContext = self;
 
-const User = userProto.User;
+const Album = album.Photos;
+
+const evenNumbers = []
 
 function messageReceived(response) {
   const buffer = response.data;
 
   var pbf = new Pbf(buffer);
-  var object = User.read(pbf);
+  var array = Album.read(pbf);
 
-  if (object.method === "GET") {
-    const t1 = performance.now();
-    fetch("https://jsonplaceholder.typicode.com/photos")
-      .then((response) => response.json())
-      .then((json) => {
-        const t2 = performance.now();
-        workerContext.postMessage({
-          obj: json,
-          time: "Call to doSomething took " + (t1 - t2) + " milliseconds.",
-        });
-      });
-  }
+  array.data.forEach((item, index) => {
+    item.sum =  item.albumId + array.data[index].albumId;
+
+    if((item.albumId % 2) == 0){
+      evenNumbers.push(item.albumId)
+    }
+  })
+
+  workerContext.postMessage({
+    obj: array.data,
+    even: evenNumbers
+  });
 }
 
 workerContext.onmessage = messageReceived;

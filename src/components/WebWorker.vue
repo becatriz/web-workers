@@ -1,20 +1,18 @@
 <template>
-  <section class="card">
-    <div v-if="isLoading">Loading...</div>
-    <div v-else class="item" v-for="item in output" :key="item.id">
-      <img :src="item.thumbnailUrl" alt="">
-    </div>
-  </section>
+  <div>
+    <span>{{ time }}</span>
+    <section class="card">
+      <div v-if="isLoading">Loading...</div>
+      <div v-else class="item" v-for="item in output" :key="item.id">
+        <img :src="item.thumbnailUrl" alt="">
+      </div>
+    </section>
+  </div>
 </template>
 
 <script>
 const worker = new Worker("../workers/default.js", { type: "module" });
-/*
-{ "albumId": 1, "id": 1, 
-"title": "accusamus beatae ad facilis cum similique qui sunt", 
-"url": "https://via.placeholder.com/600/92c952", 
-"thumbnailUrl": "https://via.placeholder.com/150/92c952" }
-*/
+
 export default {
   name: "WebWorker",
   props: {
@@ -23,19 +21,30 @@ export default {
   data: () => ({
     output: "",
     time: "",
+    timeOne: '',
     isLoading: true
   }),
   created() {
+    this.timeOne = performance.now();
     worker.onmessage = this.messageReceivedCallback;
     this.sendWorkerMessage();
   },
   methods: {
-    sendWorkerMessage() {
-      worker.postMessage({ method: "GET" });
+    async sendWorkerMessage() {
+      const response = await fetch("https://jsonplaceholder.typicode.com/photos");
+      const parseJson = await response.json();
+
+      // Aqui Strictured Clone, existe a referencia ao dado aqui e no worker
+      console.log(parseJson)
+
+      worker.postMessage(parseJson);
+
+      // Aqui na main thread ainda temos essa mesma referencia
+      console.log(parseJson)
     },
     messageReceivedCallback(response) {
       this.output = response.data.obj;
-      this.time = response.data.time;
+      this.time = this.timeOne - performance.now();
       this.isLoading = false
     },
   },
@@ -46,7 +55,7 @@ export default {
 .card {
   display: flex;
   flex-wrap: wrap;
- 
+
 }
 
 

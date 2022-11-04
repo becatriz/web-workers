@@ -1,10 +1,13 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <button @click="sendWorkerMessage">Send message</button>
-    <p class="performance">{{ time }}</p>
-    <p>{{ output }}</p>
-  </div>
+ <div>
+  <span>{{ time }}</span>
+  <section class="card">
+    <div v-if="isLoading">Loading...</div>
+    <div v-else class="item" v-for="item in output" :key="item.id">
+      <img :src="item.thumbnailUrl" alt="">
+    </div>
+  </section>
+ </div>
 </template>
 
 <script>
@@ -17,46 +20,54 @@ export default {
   },
   data: () => ({
     output: '',
-    time: ''
+    time: '',
+    timeOne: '',
+    isLoading: true
   }),
   created() {
+    this.timeOne = performance.now();
     worker.onmessage = this.messageReceivedCallback;
+    this.sendWorkerMessage();
   },
   methods: {
-    sendWorkerMessage() {
-      const object = { method: 'GET'};
+    async sendWorkerMessage() {
+
+      const response = await fetch("https://jsonplaceholder.typicode.com/photos");
+      const parseJson = await response.json();
 
       const encoder = new TextEncoder();
-      const array = encoder.encode(JSON.stringify(object));
+      const array = encoder.encode(JSON.stringify(parseJson));
+
+      //Aqui existe os dados, e a referencia não sera clonada. So estara disponivel no worker
+      console.log(array)
 
       worker.postMessage(array, [array.buffer]);
+
+       // Não existe mais a referencia ao dado
+      console.log(array)
     },
     messageReceivedCallback(response) {
-      this.output = response.data.obj[0];
-      this.time = response.data.time;
+      this.output = response.data.obj;
+      this.time = this.timeOne - performance.now();
+      this.isLoading = false
     },
   }
 }
 </script>
 
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+.card {
+  display: flex;
+  flex-wrap: wrap;
+ 
 }
 
-.performance{
-  background: yellow;
+
+.item {
+  border: 1px solid red;
+  padding: 16px;
+  align-items: center;
+  text-align: center;
 }
 
 </style>
